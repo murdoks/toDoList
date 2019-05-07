@@ -46,6 +46,20 @@ class tableViewController: UITableViewController {
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
+    
+    //MARK - Add new Items, new toDOs
 
-}
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        let alert = UIAlertController(title: "Add New :)", message: "", preferredStyle: .alert)
+        let action = UIAlertAction(title: "Add New", style: .default) { (action) in
+            //In this closure/variable is managed when user clicks the ADD button and trigger UIAlert
+            print("Success!")
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
+    
+} //Final
 
