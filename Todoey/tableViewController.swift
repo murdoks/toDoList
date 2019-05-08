@@ -10,7 +10,7 @@ import UIKit
 
 class tableViewController: UITableViewController {
 
-    let itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
     
     
     override func viewDidLoad() {
@@ -51,14 +51,25 @@ class tableViewController: UITableViewController {
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
-        let alert = UIAlertController(title: "Add New :)", message: "", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Add New", style: .default) { (action) in
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add New toDo", message: "", preferredStyle: .alert)
+        let action = UIAlertAction(title: "Confirm", style: .default) { (action) in
             //In this closure/variable is managed when user clicks the ADD button and trigger UIAlert
-            print("Success!")
+            print(textField.text as Any)
+            self.itemArray.append(textField.text!)
+            self.tableView.reloadData()
         }
         
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Fill your new toDo"
+            textField = alertTextField
+            
+            print("I am when the alert shows")
+        }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    
     }
     
 } //Final
