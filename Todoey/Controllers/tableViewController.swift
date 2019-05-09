@@ -9,13 +9,22 @@
 import UIKit
 
 class tableViewController: UITableViewController {
-
-    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    
+    let defaults = UserDefaults.standard
+    
+    var itemArray = [list]()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        let newList = list()
+        newList.tittle = "Find Mike"
+        newList.done = true
+        itemArray.append(newList)
+//        if let items = defaults.array(forKey: "ToDOList") as? [String] {
+//            itemArray = items
+//        }
     }
     
     //MARK - TableView Datasource Methods
@@ -27,7 +36,16 @@ class tableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "toDoItemCell", for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row]
+        let list = itemArray[indexPath.row]
+        
+        
+        cell.textLabel?.text = list.tittle
+        
+        if list.done == true {
+            cell.accessoryType = .checkmark
+        }else {
+            cell.accessoryType = .none
+        }
         
         return cell
     }
@@ -37,13 +55,21 @@ class tableViewController: UITableViewController {
         print(indexPath.row)
         print(itemArray[indexPath.row])
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        }else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
-            
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+//        if itemArray[indexPath.row].done == false {
+//            itemArray[indexPath.row].done = true
+//        }else {
+//            itemArray[indexPath.row].done = false
+//        }
+        
+//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+//        }else {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+//        }
+        
+        tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -57,7 +83,12 @@ class tableViewController: UITableViewController {
         let action = UIAlertAction(title: "Confirm", style: .default) { (action) in
             //In this closure/variable is managed when user clicks the ADD button and trigger UIAlert
             print(textField.text as Any)
-            self.itemArray.append(textField.text!)
+            
+            let newList = list()
+            newList.tittle = textField.text!
+            self.itemArray.append(newList)
+            
+            self.defaults.set(self.itemArray, forKey: "ToDOList")
             self.tableView.reloadData()
         }
         
