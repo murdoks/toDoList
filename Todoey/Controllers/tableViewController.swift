@@ -10,19 +10,22 @@ import UIKit
 
 class tableViewController: UITableViewController {
     
-    let defaults = UserDefaults.standard
+//    let defaults = UserDefaults.standard
     
     var itemArray = [list]()
-    
+    let dataPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("List.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        let newList = list()
-        newList.tittle = "Find Mike"
-        newList.done = true
-        itemArray.append(newList)
-//        if let items = defaults.array(forKey: "ToDOList") as? [String] {
+//        print(dataPath)
+        
+//        let newList = list()
+//        newList.tittle = "Find Mike"
+//        itemArray.append(newList)
+        
+        loadList() 
+//        if let items = defaults.array(forKey: "ToDOList") as? [list] {
 //            itemArray = items
 //        }
     }
@@ -41,11 +44,14 @@ class tableViewController: UITableViewController {
         
         cell.textLabel?.text = list.tittle
         
-        if list.done == true {
-            cell.accessoryType = .checkmark
-        }else {
-            cell.accessoryType = .none
-        }
+        cell.accessoryType = list.done ? .checkmark : .none //<- ternary operator
+//        cell.accessoryType = list.done == true ? .checkmark : .none //<- ternary operator
+        
+//        if list.done == true {
+//            cell.accessoryType = .checkmark
+//        }else {
+//            cell.accessoryType = .none
+//        }
         
         return cell
     }
@@ -56,6 +62,8 @@ class tableViewController: UITableViewController {
         print(itemArray[indexPath.row])
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        saveList()
         
 //        if itemArray[indexPath.row].done == false {
 //            itemArray[indexPath.row].done = true
@@ -69,7 +77,6 @@ class tableViewController: UITableViewController {
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
 //        }
         
-        tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -88,8 +95,7 @@ class tableViewController: UITableViewController {
             newList.tittle = textField.text!
             self.itemArray.append(newList)
             
-            self.defaults.set(self.itemArray, forKey: "ToDOList")
-            self.tableView.reloadData()
+            self.saveList()
         }
         
         alert.addTextField { (alertTextField) in
@@ -101,6 +107,35 @@ class tableViewController: UITableViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     
+    }
+    
+     //MARK - Model Manipulation Methods
+    func saveList() {
+        
+//        self.defaults.set(self.itemArray, forKey: "ToDOList")
+        
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataPath!)
+        } catch {
+            print("Error Encoding itemArray, \(error)")
+        }
+        
+        self.tableView.reloadData()
+    }
+    
+    func loadList() {
+        
+        if let data = try? Data(contentsOf: dataPath!) {
+            
+            let decoder = PropertyListDecoder()
+            do {
+             itemArray = try decoder.decode([list].self, from: data)
+            } catch {
+                print("Error Dencoding itemArray, \(error)")
+            }
+        }
     }
     
 } //Final

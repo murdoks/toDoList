@@ -8,7 +8,7 @@
 
 import Foundation
 
-class list {
+class list: Encodable, Decodable{
     
     var tittle : String = ""
     var done : Bool = false
