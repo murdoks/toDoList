@@ -7,24 +7,26 @@
 //
 
 import UIKit
+import CoreData
 
 class tableViewController: UITableViewController {
     
 //    let defaults = UserDefaults.standard
     
-    var itemArray = [list]()
-    let dataPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("List.plist")
+    var itemArray = [List]()
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+//    let dataPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("List.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
 //        print(dataPath)
-        
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
 //        let newList = list()
 //        newList.tittle = "Find Mike"
 //        itemArray.append(newList)
         
-        loadList() 
+            loadList()
 //        if let items = defaults.array(forKey: "ToDOList") as? [list] {
 //            itemArray = items
 //        }
@@ -42,7 +44,7 @@ class tableViewController: UITableViewController {
         let list = itemArray[indexPath.row]
         
         
-        cell.textLabel?.text = list.tittle
+        cell.textLabel?.text = list.title
         
         cell.accessoryType = list.done ? .checkmark : .none //<- ternary operator
 //        cell.accessoryType = list.done == true ? .checkmark : .none //<- ternary operator
@@ -61,6 +63,8 @@ class tableViewController: UITableViewController {
         print(indexPath.row)
         print(itemArray[indexPath.row])
         
+//        context.delete(itemArray[indexPath.row]) to delete Data
+//        itemArray.remove(at: indexPath.row)
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
         saveList()
@@ -91,8 +95,9 @@ class tableViewController: UITableViewController {
             //In this closure/variable is managed when user clicks the ADD button and trigger UIAlert
             print(textField.text as Any)
             
-            let newList = list()
-            newList.tittle = textField.text!
+            let newList = List(context: self.context)
+            newList.title = textField.text!
+            newList.done = false
             self.itemArray.append(newList)
             
             self.saveList()
@@ -114,29 +119,52 @@ class tableViewController: UITableViewController {
         
 //        self.defaults.set(self.itemArray, forKey: "ToDOList")
         
-        let encoder = PropertyListEncoder()
+//        let encoder = PropertyListEncoder()
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataPath!)
+//            let data = try encoder.encode(itemArray)
+//            try data.write(to: dataPath!)
+            try context.save()
         } catch {
-            print("Error Encoding itemArray, \(error)")
+            print("Error saving context, \(error)")
         }
         
         self.tableView.reloadData()
     }
     
-    func loadList() {
+    func loadList(with request: NSFetchRequest<List> = List.fetchRequest()) {
         
-        if let data = try? Data(contentsOf: dataPath!) {
-            
-            let decoder = PropertyListDecoder()
-            do {
-             itemArray = try decoder.decode([list].self, from: data)
-            } catch {
-                print("Error Dencoding itemArray, \(error)")
-            }
+//        let request : NSFetchRequest<List> = List.fetchRequest()
+        
+        do {
+            itemArray =  try context.fetch(request)
+        } catch {
+            print("Error fetching data from context \(error)")
         }
     }
     
+    
 } //Final
 
+extension tableViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        let request : NSFetchRequest<List> = List.fetchRequest()
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadList(with:  request)
+        
+//        do {
+//            itemArray =  try context.fetch(request)
+//        } catch {
+//            print("Error fetching data from context \(error)")
+//        }
+        
+//        tableView.reloadData()
+        
+//        print(searchBar.text!)
+    }
+    
+}
